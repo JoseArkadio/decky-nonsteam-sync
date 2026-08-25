@@ -245,3 +245,36 @@ def test_napisy_na_przyciskach_mieszcza_sie_w_jednej_linii():
             if len(widoczne) > budzet:
                 za_dlugie.append("%s/%s: %d > %d (%r)" % (lang, key, len(widoczne), budzet, napis))
     assert not za_dlugie, "napisy na przyciskach zawiną się w dwie linie:\n" + "\n".join(za_dlugie)
+
+
+# ---------- ekran „O wtyczce" ----------
+#
+# `About.tsx` wylicza klucze z nazwy kategorii (`ui.about.cat_X` / `ui.about.body_X`),
+# tak samo jak `stage.ts`. Zysk jest realny (osiem kategorii to 16 haseł, a nie ~80),
+# ale wyliczany klucz jest NIEWIDOCZNY dla testu na zgodność katalogów: hasło zapomniane
+# w OBU katalogach naraz nie łamie ich równości, a w interfejsie wypisuje goły klucz.
+# Ten test zamyka właśnie tę dziurę — czyta listę kategorii z kodu, nie z drugiej kopii.
+ABOUT_TSX = os.path.join(FRONT_SRC, "components", "About.tsx")
+
+
+def _kategorie_about():
+    with open(ABOUT_TSX, encoding="utf-8") as fh:
+        source = fh.read()
+    blok = re.search(r"KATEGORIE\s*=\s*\[(.*?)\]\s*as const", source, re.S)
+    assert blok, "nie znalazłem listy KATEGORIE w About.tsx"
+    return re.findall(r'"([a-z_]+)"', blok.group(1))
+
+
+def test_about_ma_kategorie():
+    """Pusta lista przechodziłaby każdy test niżej, nie sprawdziwszy niczego."""
+    assert len(_kategorie_about()) >= 2, _kategorie_about()
+
+
+def test_kazda_kategoria_about_ma_tytul_i_tresc_w_kazdym_jezyku():
+    braki = []
+    for name, cat in _catalogs().items():
+        for kategoria in _kategorie_about():
+            for klucz in ("ui.about.cat_%s" % kategoria, "ui.about.body_%s" % kategoria):
+                if klucz not in cat:
+                    braki.append("%s/%s" % (name, klucz))
+    assert not braki, "wyliczane hasła About bez wpisu w katalogu: %s" % braki

@@ -148,6 +148,10 @@ export const playerCount = callable<[appid: number], { players?: number } & Fail
 /** „deck" / „machine" / „steamos" — na czym wtyczka właśnie działa. Do pokazania
  *  JEDNEJ pastylki zgodności zamiast trzech. */
 export const deviceKind = callable<[], "deck" | "machine" | "steamos">("device_kind");
+/** Wersje na ekran „O wtyczce". Obie z Decky'ego, nie z naszego kodu — wpisana u nas
+ *  rozjechałaby się z tą, którą widzi sklep. */
+export type AboutInfo = { version: string; decky: string };
+export const about = callable<[], AboutInfo>("about");
 /** To samo dla gry ZE STEAMA, której nie ma w naszym rejestrze. */
 export const storeHltbTimes = callable<[appid: number, name: string], HltbTimes>(
   "store_hltb_times",

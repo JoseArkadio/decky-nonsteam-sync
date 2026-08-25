@@ -695,6 +695,23 @@ class Plugin:
         """
         return await asyncio.to_thread(self._metadata().players, appid)
 
+    @guarded(dict)
+    async def about(self) -> dict:
+        """Wersja wtyczki i wersja Decky'ego — na ekran „O wtyczce".
+
+        Wersję nadaje Decky z `package.json` przy ładowaniu wtyczki
+        (`DECKY_PLUGIN_VERSION` w `sandboxed_plugin.py`), więc jest to ta sama
+        liczba, którą widzi sklep — a nie druga, wpisana u nas i rozjeżdżająca się
+        z tamtą. Pole jest USTAWIANE WARUNKOWO (`if self.version`), więc czytamy
+        je z zapasem: brak wersji nie może wywalić całego ekranu.
+
+        Bez `to_thread`: to odczyt zmiennych środowiskowych procesu, nie wejście-wyjście.
+        """
+        return {
+            "version": getattr(decky, "DECKY_PLUGIN_VERSION", "") or "?",
+            "decky": getattr(decky, "DECKY_VERSION", "") or "?",
+        }
+
     @guarded(lambda: "steamos")
     async def device_kind(self) -> str:
         """„deck" / „machine" / „steamos" — NA CZYM to działa.
