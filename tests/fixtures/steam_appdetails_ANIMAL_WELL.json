@@ -1,0 +1,115 @@
+{
+ "813230": {
+  "success": true,
+  "data": {
+   "type": "game",
+   "name": "ANIMAL WELL",
+   "steam_appid": 813230,
+   "required_age": 0,
+   "is_free": false,
+   "controller_support": "full",
+   "short_description": "Explore a dense, interconnected labyrinth, and unravel its many secrets. Collect items to manipulate your environment in surprising and meaningful ways. Encounter beautiful and unsettling creatures, as you attempt to survive what lurks in the dark. There is more than what you see.",
+   "reviews": "“The new leader to beat in its sector, we're talking pure ecstasy.”<br>10/10 – Destructoid<br><br>“I'm astonished by it. Astonished by the ease with which it presents its ideas, the joy these ideas bring, and the sheer range of magical stuff it includes, all clipped together in such a satisfying manner. And fittingly, for a game about wells, I am astonished by how deep it all goes.”<br>10/10 – Eurogamer<br><br>“Animal Well redefines the Metroidvania genre”<br>10/10 – Noisy Pixel<br>",
+   "header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/813230/header.jpg?t=1776365443",
+   "capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/813230/capsule_231x87.jpg?t=1776365443",
+   "capsule_imagev5": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/813230/capsule_184x69.jpg?t=1776365443",
+   "website": "https://www.animalwell.net",
+   "legal_notice": "Animal Well © 2024 Shared Memory LLC. All Rights reserved.",
+   "developers": [
+    "Billy Basso"
+   ],
+   "publishers": [
+    "Bigmode"
+   ],
+   "price_overview": {
+    "currency": "PLN",
+    "initial": 6999,
+    "final": 4899,
+    "discount_percent": 30,
+    "initial_formatted": "69,99 zł",
+    "final_formatted": "48,99 zł"
+   },
+   "packages": [
+    248472
+   ],
+   "platforms": {
+    "windows": true,
+    "mac": false,
+    "linux": false
+   },
+   "metacritic": {
+    "score": 90,
+    "url": "https://www.metacritic.com/game/pc/animal-well?ftag=MCD-06-10aaa1f"
+   },
+   "categories": [
+    {
+     "id": 2,
+     "description": "Jednoosobowa"
+    },
+    {
+     "id": 22,
+     "description": "Osiągnięcia Steam"
+    },
+    {
+     "id": 28,
+     "description": "Pełna obsługa kontrolerów"
+    },
+    {
+     "id": 60,
+     "description": "Kontroler zalecany"
+    },
+    {
+     "id": 55,
+     "description": "Obsługa kontrolerów DUALSHOCK"
+    },
+    {
+     "id": 56,
+     "description": "Obsługa kontrolerów DUALSHOCK"
+    },
+    {
+     "id": 57,
+     "description": "Obsługa kontrolerów DualSense"
+    },
+    {
+     "id": 58,
+     "description": "Obsługa kontrolerów DualSense"
+    },
+    {
+     "id": 23,
+     "description": "Steam Cloud"
+    },
+    {
+     "id": 62,
+     "description": "Udostępnianie gier"
+    }
+   ],
+   "genres": [
+    {
+     "id": "1",
+     "description": "Akcja"
+    },
+    {
+     "id": "25",
+     "description": "Przygodowe"
+    },
+    {
+     "id": "23",
+     "description": "Niezależne"
+    }
+   ],
+   "recommendations": {
+    "total": 22702
+   },
+   "release_date": {
+    "coming_soon": false,
+    "date": "9 maja 2024"
+   },
+   "support_info": {
+    "url": "",
+    "email": "support@bigmode.com"
+   },
+   "background": "https://store.akamai.steamstatic.com/images/storepagebackground/app/813230?t=1776365443",
+   "background_raw": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/813230/page_bg_raw.jpg?t=1776365443"
+  }
+ }
+}

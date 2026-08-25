@@ -1,0 +1,164 @@
+===CLOUD_DOWNLOAD_PREVIEW_STDERR===
+{
+  "games": {}
+}
+===CLOUD_UPLOAD_PREVIEW_STDERR===
+{
+  "games": {}
+}
+===BACKUP_PREVIEW_STDOUT===
+{
+  "overall": {
+    "totalGames": 1,
+    "totalBytes": 479411,
+    "processedGames": 1,
+    "processedBytes": 479411,
+    "changedGames": {
+      "new": 0,
+      "different": 0,
+      "same": 1
+    }
+  },
+  "games": {
+    "Animal Well": {
+      "decision": "Processed",
+      "change": "Same",
+      "files": {
+        "/home/deck/.local/share/Steam/steamapps/compatdata/2911071959/pfx/drive_c/users/steamuser/AppData/LocalLow/Billy Basso/Animal Well/AnimalWell.sav": {
+          "change": "Same",
+          "bytes": 479360
+        },
+        "/home/deck/.local/share/Steam/steamapps/compatdata/813230/pfx/drive_c/users/steamuser/AppData/LocalLow/Billy Basso/Animal Well/steam_autocloud.vdf": {
+          "change": "Same",
+          "bytes": 51
+        }
+      },
+      "registry": {}
+    }
+  }
+}
+===BACKUPS_STDOUT===
+{
+  "games": {
+    "Animal Well": {
+      "backupPath": "/home/deck/ludusavi-backup/Animal Well",
+      "backups": [
+        {
+          "name": ".",
+          "when": "2026-08-19T16:34:52.601297553Z",
+          "os": "linux",
+          "locked": false
+        }
+      ]
+    }
+  }
+}
+===CLOUD_UPLOAD_PREVIEW_WITH_CHANGES_STDERR===
+{
+  "games": {},
+  "cloud": {
+    "Animal Well/.sdsync-probe.txt": {
+      "change": "Different"
+    }
+  }
+}
+===RESTORE_PREVIEW_STDOUT===
+{
+  "overall": {
+    "totalGames": 1,
+    "totalBytes": 479411,
+    "processedGames": 1,
+    "processedBytes": 479411,
+    "changedGames": {
+      "new": 0,
+      "different": 0,
+      "same": 1
+    }
+  },
+  "games": {
+    "Animal Well": {
+      "decision": "Processed",
+      "change": "Same",
+      "files": {
+        "/home/deck/.local/share/Steam/steamapps/compatdata/2911071959/pfx/drive_c/users/steamuser/AppData/LocalLow/Billy Basso/Animal Well/AnimalWell.sav": {
+          "change": "Same",
+          "bytes": 479360
+        },
+        "/home/deck/.local/share/Steam/steamapps/compatdata/813230/pfx/drive_c/users/steamuser/AppData/LocalLow/Billy Basso/Animal Well/steam_autocloud.vdf": {
+          "change": "Same",
+          "bytes": 51
+        }
+      },
+      "registry": {}
+    }
+  }
+}
+===BACKUP_PREVIEW_NO_SAVES_STDOUT===
+{
+  "overall": {
+    "totalGames": 0,
+    "totalBytes": 0,
+    "processedGames": 0,
+    "processedBytes": 0,
+    "changedGames": {
+      "new": 0,
+      "different": 0,
+      "same": 0
+    }
+  },
+  "games": {}
+}
+===CLOUD_DOWNLOAD_PREVIEW_BEHIND_STDERR===
+{
+  "games": {},
+  "cloud": {
+    "Animal Well/backup-20260820T191346Z/drive-0/sdsync/animal-well/drive_c/users/steamuser/AppData/LocalLow/Billy Basso/Animal Well/AnimalWell.sav": {
+      "change": "Different"
+    },
+    "Animal Well/mapping.yaml": {
+      "change": "Different"
+    }
+  }
+}
+===CLOUD_UPLOAD_PREVIEW_BEHIND_STDERR===
+{
+  "games": {},
+  "cloud": {
+    "Animal Well/backup-20260820T191346Z/drive-0/sdsync/animal-well/drive_c/users/steamuser/AppData/LocalLow/Billy Basso/Animal Well/AnimalWell.sav": {
+      "change": "Removed"
+    },
+    "Animal Well/mapping.yaml": {
+      "change": "Different"
+    }
+  }
+}
+===CLOUD_DOWNLOAD_PREVIEW_BOTH_WAYS_STDERR===
+{
+  "games": {},
+  "cloud": {
+    "Animal Well/.sdsync-probe.txt": {
+      "change": "Removed"
+    },
+    "Animal Well/backup-20260820T195036Z/drive-0/sdsync/animal-well/drive_c/users/steamuser/AppData/LocalLow/Billy Basso/Animal Well/AnimalWell.sav": {
+      "change": "Different"
+    },
+    "Animal Well/mapping.yaml": {
+      "change": "Different"
+    }
+  }
+}
+===CLOUD_UPLOAD_PREVIEW_BOTH_WAYS_STDERR===
+{
+  "games": {},
+  "cloud": {
+    "Animal Well/.sdsync-probe.txt": {
+      "change": "Different"
+    },
+    "Animal Well/backup-20260820T195036Z/drive-0/sdsync/animal-well/drive_c/users/steamuser/AppData/LocalLow/Billy Basso/Animal Well/AnimalWell.sav": {
+      "change": "Removed"
+    },
+    "Animal Well/mapping.yaml": {
+      "change": "Different"
+    }
+  }
+}

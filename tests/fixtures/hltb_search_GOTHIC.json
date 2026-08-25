@@ -1,0 +1,32 @@
+{
+  "color": "blue",
+  "title": "Search Results",
+  "category": "games",
+  "count": 2,
+  "pageCurrent": 1,
+  "data": [
+    {
+      "count": 1,
+      "game_id": 130855,
+      "game_name": "Gothic 1 Remake",
+      "game_alias": "Gothic Remake",
+      "comp_main": 128160,
+      "comp_plus": 185040,
+      "comp_100": 264600,
+      "comp_all": 186840,
+      "profile_steam": 0,
+      "release_world": 2026
+    },
+    {
+      "count": 1,
+      "game_id": 3721,
+      "game_name": "Gothic",
+      "comp_main": 63000,
+      "comp_plus": 90000,
+      "comp_100": 126000,
+      "comp_all": 91800,
+      "profile_steam": 65540,
+      "release_world": 2001
+    }
+  ]
+}

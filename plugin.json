@@ -1,0 +1,16 @@
+{
+  "name": "NonSteam Sync",
+  "author": "JoseArkadio",
+  "flags": [],
+  "api_version": 1,
+  "publish": {
+    "tags": [
+      "library",
+      "saves",
+      "non-steam",
+      "sd-card"
+    ],
+    "description": "Turns non-Steam games on a removable SD card into real Steam library entries — Proton, artwork and store metadata — and carries their saves between SteamOS devices on the card itself.",
+    "image": "https://opengraph.githubassets.com/1/JoseArkadio/decky-nonsteam-sync"
+  }
+}

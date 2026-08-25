@@ -1,0 +1,155 @@
+{
+ "2001120": {
+  "success": true,
+  "data": {
+   "type": "game",
+   "name": "Split Fiction",
+   "steam_appid": 2001120,
+   "required_age": 0,
+   "is_free": false,
+   "controller_support": "full",
+   "dlc": [
+    4110950
+   ],
+   "short_description": "Przeżyj moc niewiarygodnych wrażeń, zanurzając się w różnorodnych światach Split Fiction – przełamującej granice kooperacyjnej grze przygodowej.",
+   "header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2001120/header.jpg?t=1763484567",
+   "capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2001120/1988bcdc421d71cbe4c8c07940967e7a0cd752be/capsule_231x87.jpg?t=1763484567",
+   "capsule_imagev5": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2001120/1988bcdc421d71cbe4c8c07940967e7a0cd752be/capsule_184x69.jpg?t=1763484567",
+   "website": "https://www.ea.com/games/split-fiction/split-fiction",
+   "legal_notice": "*Dostęp dla znajomych wymaga instalacji Dostępu dla znajomych, stałego połączenia z Internetem oraz posiadania konta na odpowiedniej platformie. Jeden użytkownik musi posiadać pełną wersję gry, aby użytkownik grający z nim w trybie współpracy również mógł w nią zagrać.<br />\r\n<br />\r\nDo gry wymagane są: połączenie z Internetem, Konto Steam i akceptacja Umowy użytkownika EA (terms.ea.com/pl). Do korzystania z usług EA zastosowanie mają zasady Ochrony danych osobowych i plików cookie EA. Wyrażasz zgodę na przekazywanie danych osobowych zebranych za pośrednictwem usług EA do Stanów Zjednoczonych, jak wyjaśniono to szczegółowo w zasadach Ochrony danych osobowych i plików cookie. Funkcje sieciowe, w tym Dostęp dla znajomych i crossplay, wymagają Konta EA. Aby uzyskać dostęp do funkcji sieciowych, należy powiązać Konto EA i konto Steam. EA może udostępnić Steamowi identyfikator konta użytkownika oraz/lub jego indywidualne dane dotyczące gry i rozgrywki, by potwierdzić złożone przez użytkownika zamówienie zakupowe oraz/lub żądanie zwrotu. Dostęp do zawartości oprogramowania jest ograniczony do jednego Konta EA oraz/lub jednego konta Steam i nie można przekazać go innej osobie po dokonaniu zakupu. Może się okazać, że użytkownik musi mieć przynajmniej 13 lub 16 lat w celu zarejestrowania Konta EA (wymagania dotyczące wieku mogą być zróżnicowane, więcej informacji znajduje się na stronie o.ea.com/ea/child-access-pl). Odblokowanie części zawartości może wymagać postępów w grze. Aktualizacje zawartości mogą być pobierane automatycznie, wymagać dodatkowego miejsca na dysku i wiązać się z opłatami z tytułu korzystania z połączenia internetowego. EA może sukcesywnie dostarczać określoną bezpłatną zawartość lub aktualizacje. EA może zaprzestać udostępniania opcji online po powiadomieniu zamieszczonym z 30-dniowym wyprzedzeniem na stronie www.ea.com/pl-pl/service-updates.<br />\r\n<br />\r\nUmowa użytkownika EA: terms.ea.com/de dla mieszkańców Niemiec i terms.ea.com/pl dla mieszkańców wszystkich pozostałych państw.<br />\r\nZasady ochrony danych osobowych i plików cookie EA: privacy.ea.com/de dla mieszkańców Niemiec i privacy.ea.com/pl dla mieszkańców wszystkich pozostałych państw.<br />\r\n<br />\r\n© 2025 Hazelight Studios AB. Split Fiction i Hazelight są znakami towarowymi Hazelight Studios AB. EA Originals jest znakiem towarowym Electronic Arts Inc.",
+   "developers": [
+    "Hazelight Studios"
+   ],
+   "publishers": [
+    "Electronic Arts"
+   ],
+   "price_overview": {
+    "currency": "PLN",
+    "initial": 21990,
+    "final": 21990,
+    "discount_percent": 0,
+    "initial_formatted": "",
+    "final_formatted": "219,90 zł"
+   },
+   "packages": [
+    1084787,
+    722525
+   ],
+   "platforms": {
+    "windows": true,
+    "mac": false,
+    "linux": false
+   },
+   "categories": [
+    {
+     "id": 1,
+     "description": "Wieloosobowa"
+    },
+    {
+     "id": 9,
+     "description": "Kooperacja"
+    },
+    {
+     "id": 38,
+     "description": "Kooperacja przez internet"
+    },
+    {
+     "id": 39,
+     "description": "Kooperacja na wspólnym/dzielonym ekranie"
+    },
+    {
+     "id": 24,
+     "description": "Wspólny/dzielony ekran"
+    },
+    {
+     "id": 27,
+     "description": "Wieloplatformowa wieloosobowa"
+    },
+    {
+     "id": 22,
+     "description": "Osiągnięcia Steam"
+    },
+    {
+     "id": 28,
+     "description": "Pełna obsługa kontrolerów"
+    },
+    {
+     "id": 29,
+     "description": "Karty kolekcjonerskie Steam"
+    },
+    {
+     "id": 13,
+     "description": "Dostępne napisy"
+    },
+    {
+     "id": 67,
+     "description": "Dostosowywanie kamery"
+    },
+    {
+     "id": 66,
+     "description": "Alternatywne opcje kolorystyczne"
+    },
+    {
+     "id": 55,
+     "description": "Obsługa kontrolerów DUALSHOCK"
+    },
+    {
+     "id": 57,
+     "description": "Obsługa kontrolerów DualSense"
+    },
+    {
+     "id": 58,
+     "description": "Obsługa kontrolerów DualSense"
+    },
+    {
+     "id": 69,
+     "description": "Dźwięk stereo"
+    },
+    {
+     "id": 70,
+     "description": "Dźwięk przestrzenny"
+    },
+    {
+     "id": 23,
+     "description": "Steam Cloud"
+    },
+    {
+     "id": 44,
+     "description": "Remote Play Together"
+    },
+    {
+     "id": 61,
+     "description": "Włączone HDR"
+    },
+    {
+     "id": 62,
+     "description": "Udostępnianie gier"
+    }
+   ],
+   "genres": [
+    {
+     "id": "1",
+     "description": "Akcja"
+    },
+    {
+     "id": "25",
+     "description": "Przygodowe"
+    }
+   ],
+   "recommendations": {
+    "total": 77764
+   },
+   "achievements": {
+    "total": 20
+   },
+   "release_date": {
+    "coming_soon": false,
+    "date": "6 marca 2025"
+   },
+   "support_info": {
+    "url": "https://help.ea.com/",
+    "email": ""
+   }
+  }
+ }
+}

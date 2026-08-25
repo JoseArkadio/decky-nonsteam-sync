@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  engine:
+    name: Engine tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install pytest
+      - run: pytest tests/ -q
+
+  frontend:
+    name: Frontend build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      # rollup reports TypeScript problems as warnings and still exits 0,
+      # so a clean exit code is not proof of a clean build — grep for them.
+      - name: Build (fail on TypeScript warnings)
+        run: |
+          set -o pipefail
+          pnpm build 2>&1 | tee build.log
+          if grep -q "plugin typescript" build.log; then
+            echo "::error::rollup reported TypeScript problems"
+            grep "plugin typescript" build.log
+            exit 1
+          fi
+      - run: test -s dist/index.js
