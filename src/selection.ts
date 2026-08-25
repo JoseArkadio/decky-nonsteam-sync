@@ -61,3 +61,8 @@ export const ABOUT_ROUTE = "/sdsync-about";
 /** Trasa jednej kategorii. Nazwy kategorii są z [a-z_] (patrz KATEGORIE w About.tsx),
  *  więc nadają się do adresu bez kodowania. */
 export const aboutRoute = (kategoria: string): string => `${ABOUT_ROUTE}/${kategoria}`;
+
+/** Ekran „Zdarzenia" — też własna trasa, z tego samego powodu co About: panel Quick
+ *  Access jest wąski, a wiersze synchronizacji długie, więc każdy wpis zawijał się
+ *  tam na trzy linie. Osobny prefiks, nie `/sdsync/…`, żeby nie wpadł w `:key?`. */
+export const EVENTS_ROUTE = "/sdsync-events";

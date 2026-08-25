@@ -2,6 +2,7 @@ import { PanelSection, PanelSectionRow, SidebarNavigation } from "@decky/ui";
 import { useEffect, useState } from "react";
 import { about, AboutInfo } from "../backend";
 import { aboutRoute } from "../selection";
+import { RichText } from "./RichText";
 import { SidebarColumnWidth } from "../steam-page-patch";
 import { t } from "../i18n";
 import { useLang } from "../i18n/resolve";
@@ -85,20 +86,12 @@ export function About() {
           </PanelSectionRow>
         )}
         <PanelSectionRow>
-          {/* pre-wrap, bo treść kategorii jest JEDNYM hasłem z własnym łamaniem
-              wierszy: osiem kategorii rozbitych na osobne klucze per punkt to ~80
-              haseł w każdym katalogu zamiast 16, a układ i tak niesie sam tekst
-              (• dla funkcji, 1. dla kroków tutoriala) */}
-          <div
-            style={{
-              fontSize: "0.9em",
-              lineHeight: 1.55,
-              whiteSpace: "pre-wrap",
-              opacity: 0.9,
-            }}
-          >
-            {t(`ui.about.body_${nazwa}`)}
-          </div>
+          {/* Treść kategorii jest JEDNYM hasłem (osiem kategorii rozbitych na klucze
+              per punkt to ~80 haseł w każdym katalogu zamiast 16), a strukturę —
+              akapity, nagłówki grup, punkty, kroki — czyta z niego `RichText` po
+              konwencjach, których hasła i tak już używały. Wcześniej było tu
+              `white-space: pre-wrap`, czyli jeden ciąg bez żadnej hierarchii. */}
+          <RichText tekst={t(`ui.about.body_${nazwa}`)} />
         </PanelSectionRow>
       </PanelSection>
     ),

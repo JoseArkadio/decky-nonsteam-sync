@@ -139,7 +139,6 @@
   "qa.lang_auto": "Jak Steam (domyślnie)",
   "qa.lang_desc": "Domyślnie ten, w którym mówi interfejs Steama.",
   "qa.lang_label": "Język wtyczki",
-  "qa.log_hide": "Ukryj zdarzenia",
   "qa.log_show": "Zdarzenia",
   "qa.open_game_list": "Otwórz listę gier",
   "qa.option_off": "Nie pokazuj",
@@ -271,6 +270,14 @@
   "ui.disk_pick_exe_button_other": "Wskaż inny plik",
   "ui.duration.hour": "g",
   "ui.duration.minute": "min",
+  "ui.events.refresh": "Odśwież",
+  "ui.events.showing": {
+    "one": "{count} zdarzenie (pokazuję ostatnie {cap})",
+    "few": "{count} zdarzenia (pokazuję ostatnie {cap})",
+    "many": "{count} zdarzeń (pokazuję ostatnie {cap})",
+    "other": "{count} zdarzenia (pokazuję ostatnie {cap})"
+  },
+  "ui.events.title": "Zdarzenia",
   "ui.exclude_toggle_label": "Pomijaj przy synchronizacji",
   "ui.exe_save_failed": "nie udało się zapisać ścieżki",
   "ui.exe_set_note": "wskazano {path} — kafelek przestawiony na ten plik",

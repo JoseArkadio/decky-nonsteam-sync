@@ -6,14 +6,23 @@
   "scripts": {
     "build": "rollup -c",
     "typecheck": "tsc --noEmit",
-    "check": "node --experimental-strip-types checks/duration.check.ts",
+    "check": "node --experimental-strip-types checks/duration.check.ts && node --experimental-strip-types checks/richtext.check.ts",
     "watch": "rollup -c -w"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/JoseArkadio/decky-nonsteam-sync.git"
   },
-  "keywords": ["decky", "plugin", "steam-deck", "steamos", "non-steam", "saves", "sd-card", "ludusavi"],
+  "keywords": [
+    "decky",
+    "plugin",
+    "steam-deck",
+    "steamos",
+    "non-steam",
+    "saves",
+    "sd-card",
+    "ludusavi"
+  ],
   "author": "JoseArkadio",
   "license": "BSD-3-Clause",
   "bugs": {
@@ -35,7 +44,10 @@
   },
   "pnpm": {
     "peerDependencyRules": {
-      "ignoreMissing": ["react", "react-dom"]
+      "ignoreMissing": [
+        "react",
+        "react-dom"
+      ]
     }
   }
 }

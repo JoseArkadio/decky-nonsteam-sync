@@ -37,7 +37,6 @@
   "qa.lang_auto": "Same as Steam (default)",
   "qa.lang_desc": "Follows the Steam interface language by default.",
   "qa.lang_label": "Plugin language",
-  "qa.log_hide": "Hide events",
   "qa.log_show": "Events",
   "qa.open_game_list": "Open game list",
   "qa.option_off": "Don't show",
@@ -169,6 +168,12 @@
   "ui.disk_pick_exe_button_other": "Choose a different file",
   "ui.duration.hour": "h",
   "ui.duration.minute": "min",
+  "ui.events.refresh": "Refresh",
+  "ui.events.showing": {
+    "one": "{count} event (showing the last {cap})",
+    "other": "{count} events (showing the last {cap})"
+  },
+  "ui.events.title": "Events",
   "ui.exclude_toggle_label": "Skip during sync",
   "ui.exe_save_failed": "could not save the path",
   "ui.exe_set_note": "pointed to {path} — the tile now uses this file",

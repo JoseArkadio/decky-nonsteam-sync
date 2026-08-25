@@ -23,13 +23,13 @@ import {
   setUiSetting,
 } from "./backend";
 import { ScanSummary, addOne, describe, emptySummary, finishAdding } from "./add-game";
-import { EventLog } from "./components/EventLog";
+import { EventsPage } from "./components/EventLog";
 import { CATALOGS, fromBackend, setLang, t } from "./i18n";
 import { fromEnvironment, useLang } from "./i18n/resolve";
 import { refreshCardBadges, refreshPlaytime, registerEvents, syncNow } from "./events";
 import { SdSyncPage } from "./pages/SdSyncPage";
 import { About, KATEGORIE } from "./components/About";
-import { ABOUT_ROUTE, SDSYNC_ROUTE, aboutRoute } from "./selection";
+import { ABOUT_ROUTE, EVENTS_ROUTE, SDSYNC_ROUTE, aboutRoute } from "./selection";
 import { getPatchFailure, patchGamePage } from "./steam-page-patch";
 
 /** Skan karty → dodanie każdej rozpoznanej gry. Sama logika dodawania siedzi w
@@ -88,7 +88,6 @@ function Panel() {
   });
   const [cloud, setCloud] = useState<boolean | null>(null);
   const [showSettings, setShowSettings] = useState(false);
-  const [showLog, setShowLog] = useState(false);
   const [key, setKey] = useState("");
   const [keyStored, setKeyStored] = useState<boolean | null>(null);
   const [keyNote, setKeyNote] = useState<string | null>(null);
@@ -213,14 +212,13 @@ function Panel() {
       )}
 
       {/* Log NAD ustawieniami: czyta się go często (po każdej nieudanej synchronizacji),
-          a w ustawienia wchodzi się raz w życiu. Był osobną stroną na ekranie NonSteam Sync —
-          dlaczego stamtąd wyszedł, patrz komentarz w components/EventLog.tsx. */}
+          a w ustawienia wchodzi się raz w życiu. Trzecia lokalizacja tego widoku —
+          dlaczego dwie poprzednie nie wystarczyły, patrz components/EventLog.tsx. */}
       <PanelSectionRow>
-        <ButtonItem layout="below" onClick={() => setShowLog((visible) => !visible)}>
-          {showLog ? t("qa.log_hide") : t("qa.log_show")}
+        <ButtonItem layout="below" onClick={() => Navigation.Navigate(EVENTS_ROUTE)}>
+          {t("qa.log_show")}
         </ButtonItem>
       </PanelSectionRow>
-      {showLog && <EventLog />}
 
       <PanelSectionRow>
         <ButtonItem layout="below" onClick={() => Navigation.Navigate(aboutRoute(KATEGORIE[0]))}>
@@ -462,6 +460,7 @@ export default definePlugin(() => {
   // Machine na ostatniej. Trasa zostaje opcjonalna, bo wejście bez parametru musi
   // dalej renderować ekran, a nie wyprowadzać z niego.
   routerHook.addRoute(`${ABOUT_ROUTE}/:cat?`, About, { exact: true });
+  routerHook.addRoute(EVENTS_ROUTE, EventsPage, { exact: true });
   // sekcja na ekranie gry: gdy Steam przestawi układ, wstrzyknięcie się nie uda —
   // log zdarzeń i panel muszą to pokazać, cisza wyglądałaby jak „nie ma nic"
   // Patch trasy biblioteki jest tylko WYZWALACZEM: React nie daje nam kafelka do
@@ -493,6 +492,7 @@ export default definePlugin(() => {
       unpatchGamePage();
       routerHook.removeRoute(`${SDSYNC_ROUTE}/:key?`);
       routerHook.removeRoute(`${ABOUT_ROUTE}/:cat?`);
+      routerHook.removeRoute(EVENTS_ROUTE);
       delete (window as any).SDSync;
     },
   };

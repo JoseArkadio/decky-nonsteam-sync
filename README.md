@@ -65,6 +65,9 @@ press Play, not after Steam fails to find the file.
 - **Explains itself.** An *About this plugin* screen groups every feature into eight
   categories and carries step-by-step setup for the parts that need it — Ludusavi and
   rclone, the SteamGridDB key, the first scan. Reachable from the Quick Access panel.
+- **Writes down what it did.** Every operation lands in an event log with its outcome
+  and how long it took — the one place that says *why* something failed rather than
+  just that it did.
 
 ## How it decides where the newest save is
 
@@ -124,6 +127,11 @@ Access panel:
 
 ![The Cloud category: what the cloud is for, and a three-step setup for Ludusavi and rclone](assets/about-cloud.png)
 
+When a sync does not go the way you expected, **Events** says what happened and how
+long each stage took:
+
+![The event log: time, kind and message per row, errors tinted red, with a refresh button](assets/events.png)
+
 ## Development
 
 ```bash
@@ -131,11 +139,15 @@ uvx pytest tests/ -q     # engine tests, no device needed
 pnpm install
 pnpm build               # frontend bundle into dist/
 pnpm typecheck           # types only — it does not check behaviour
-pnpm check               # the one runnable frontend check (needs Node 23+)
+pnpm check               # the runnable frontend checks (needs Node 23+)
 ```
 
 `pnpm build` reports TypeScript problems as *warnings* and still emits a bundle
 with exit code 0. Read its output; a clean exit code is not proof of a clean build.
+
+`pnpm typecheck` checks types, not behaviour. Anything that is a pure function in
+`src/*.ts` should leave a check behind in `checks/` — that directory lives outside
+`src/` on purpose, so it stays out of `tsc` and needs no extra dependency.
 
 ### Layout
 
