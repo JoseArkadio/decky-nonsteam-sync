@@ -28,8 +28,8 @@ import { CATALOGS, fromBackend, setLang, t } from "./i18n";
 import { fromEnvironment, useLang } from "./i18n/resolve";
 import { refreshCardBadges, refreshPlaytime, registerEvents, syncNow } from "./events";
 import { SdSyncPage } from "./pages/SdSyncPage";
-import { About } from "./components/About";
-import { ABOUT_ROUTE, SDSYNC_ROUTE } from "./selection";
+import { About, KATEGORIE } from "./components/About";
+import { ABOUT_ROUTE, SDSYNC_ROUTE, aboutRoute } from "./selection";
 import { getPatchFailure, patchGamePage } from "./steam-page-patch";
 
 /** Skan karty → dodanie każdej rozpoznanej gry. Sama logika dodawania siedzi w
@@ -223,7 +223,7 @@ function Panel() {
       {showLog && <EventLog />}
 
       <PanelSectionRow>
-        <ButtonItem layout="below" onClick={() => Navigation.Navigate(ABOUT_ROUTE)}>
+        <ButtonItem layout="below" onClick={() => Navigation.Navigate(aboutRoute(KATEGORIE[0]))}>
           {t("qa.about_button")}
         </ButtonItem>
       </PanelSectionRow>
@@ -454,6 +454,13 @@ export default definePlugin(() => {
   // z moimi grami", a About na „co ta wtyczka robi". `:cat?` z tego samego powodu co
   // `:key?` wyżej — SidebarNavigation w środku jest route-driven i bez istniejącej
   // trasy jego `history.replace` wyprowadza z naszego ekranu.
+  // Parametr jest OPCJONALNY w trasie, ale wchodzimy ZAWSZE z konkretną kategorią
+  // (przycisk w panelu celuje w KATEGORIE[0]). ZMIERZONE na dwóch urządzeniach:
+  // przy wejściu na samo `/sdsync-about` żadna strona nie pasuje do adresu
+  // (`pages.find(({route}) => matchPath(pathname, route))`), a wtedy podświetlenie
+  // wypada gdzie indziej na każdym urządzeniu — Deck stanął na pierwszej kategorii,
+  // Machine na ostatniej. Trasa zostaje opcjonalna, bo wejście bez parametru musi
+  // dalej renderować ekran, a nie wyprowadzać z niego.
   routerHook.addRoute(`${ABOUT_ROUTE}/:cat?`, About, { exact: true });
   // sekcja na ekranie gry: gdy Steam przestawi układ, wstrzyknięcie się nie uda —
   // log zdarzeń i panel muszą to pokazać, cisza wyglądałaby jak „nie ma nic"
