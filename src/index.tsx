@@ -137,7 +137,11 @@ function Panel() {
   const patchFailure = getPatchFailure();
 
   return (
-    <PanelSection title="NonSteam Sync">
+    // BEZ `title`: Decky rysuje nazwę wtyczki we własnym nagłówku panelu (nasz
+    // `titleView`), więc `title` tutaj dawał ten sam napis dwa razy pod rząd —
+    // „NonSteam Sync" i pod nim „NONSTEAM SYNC" (ZMIERZONE na zrzucie z Decka).
+    // Ta sama grabla co na ekranie „O wtyczce".
+    <PanelSection>
       <PanelSectionRow>
         <div style={{ fontSize: "0.85em", color: stat.conflicts ? "#ffb347" : undefined }}>{status}</div>
       </PanelSectionRow>
