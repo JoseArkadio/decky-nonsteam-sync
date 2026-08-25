@@ -1,7 +1,6 @@
 import { PanelSection, PanelSectionRow, SidebarNavigation } from "@decky/ui";
 import { useEffect, useState } from "react";
 import { GameRecord, games } from "../backend";
-import { About } from "../components/About";
 import { GameDetails } from "../components/GameDetails";
 import { GameListItem } from "../components/GameListItem";
 import { AddFromDisk } from "../components/AddFromDisk";
@@ -94,16 +93,6 @@ export function SdSyncPage() {
         <AddFromDisk onChanged={() => void reload()} />
       </>
     ),
-  });
-
-  // „O wtyczce" na końcu i w TYM spisie, a nie jako osobna trasa: wtyczka ma już
-  // jeden ekran, a druga trasa znaczyłaby drugie miejsce do wejścia i drugi patch.
-  // Treść jest harmonijką (patrz komentarz w components/About.tsx) właśnie dlatego,
-  // że długa strona w tej pozycji raz już zepsuła nawigację pada — na logu zdarzeń.
-  pages.push({
-    title: t("ui.about.title"),
-    route: `${SDSYNC_ROUTE}/-about`,
-    content: <About />,
   });
 
   return (

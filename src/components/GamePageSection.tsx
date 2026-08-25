@@ -1,6 +1,6 @@
 import { DialogButton, Focusable, Navigation } from "@decky/ui";
 import { FaInfoCircle, FaSteam, FaSync } from "react-icons/fa";
-import { CSSProperties, useEffect, useState } from "react";
+import { CSSProperties, useEffect, useRef, useState } from "react";
 import { GameMetaRecord, GameRecord, UiSettings, deviceKind, games, getUiSettings, storeMetadata, syncGame } from "../backend";
 import { gameRoute, selectGame } from "../selection";
 import { dotColor, gameStatus } from "../status";
@@ -157,6 +157,9 @@ export function GamePageSection({ appid }: { appid: number }) {
   // Karta informacyjna dla gry ZE STEAMA: jej nie obsługujemy (zapisów nie tykamy),
   // ale ekran gry i tak nie pokazuje daty premiery, oceny ani trybów — a my je mamy.
   const [obca, setObca] = useState<GameMetaRecord | null>(null);
+  // Korzeń panelu. Jedyne pewne źródło DOKUMENTU, w którym renderuje się interfejs:
+  // `document` w tym module to SharedJSContext, a nie okno Big Picture.
+  const korzen = useRef<HTMLDivElement | null>(null);
   // Stan przycisku synchronizacji. Osobno od reszty: to jedyna rzecz na tym ekranie,
   // która trwa dłużej niż mrugnięcie, a „Pracuję…" bez śladu na przycisku wyglądałoby
   // jak kliknięcie, które nic nie zrobiło.
@@ -209,13 +212,18 @@ export function GamePageSection({ appid }: { appid: number }) {
   // Czarno-białe tło, gdy karty nie ma — ta sama informacja co ostrzeżenie niżej,
   // tylko widoczna kątem oka. Cofamy przy odmontowaniu, żeby ekran innej gry (albo
   // ta sama po włożeniu karty) nie został szary.
+  // Dokument bierzemy z NASZEGO wyrenderowanego elementu (`ownerDocument`), bo kod
+  // wtyczki chodzi w SharedJSContext, a interfejs renderuje się w innym oknie CEF —
+  // gołe `document` kierowało regułę w pustą stronę i efekt po cichu nie działał
+  // (ZMIERZONE, szczegóły przy `greyGamePage`).
   useEffect(() => {
     if (!game) return;
-    greyGamePage(appid, !game.available);
+    const doc = korzen.current?.ownerDocument ?? null;
+    greyGamePage(appid, !game.available, doc);
     return () => {
-      greyGamePage(appid, false);
+      greyGamePage(appid, false, doc);
     };
-  }, [appid, game?.available]);
+  }, [appid, game?.available, game]);
 
   if (!placement) return null; // panel wyłączony w ustawieniach
 
@@ -224,7 +232,7 @@ export function GamePageSection({ appid }: { appid: number }) {
   if (!game) {
     if (!obca) return null; // cudzy skrót, emulator albo gra bez danych w sklepie
     return (
-      <div style={placement}>
+      <div style={placement} ref={korzen}>
         <div style={pudelko(where === "bar")}>
         <div style={{ position: "relative", fontSize: "1.3em", fontWeight: "bold", lineHeight: 1.15 }}>
           {obca.name}
@@ -294,7 +302,7 @@ export function GamePageSection({ appid }: { appid: number }) {
   const pasek = where === "bar";
 
   return (
-    <div style={placement}>
+    <div style={placement} ref={korzen}>
     <div
       style={{
         display: "flex",

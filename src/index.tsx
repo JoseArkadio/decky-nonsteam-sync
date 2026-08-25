@@ -28,7 +28,8 @@ import { CATALOGS, fromBackend, setLang, t } from "./i18n";
 import { fromEnvironment, useLang } from "./i18n/resolve";
 import { refreshCardBadges, refreshPlaytime, registerEvents, syncNow } from "./events";
 import { SdSyncPage } from "./pages/SdSyncPage";
-import { SDSYNC_ROUTE } from "./selection";
+import { About } from "./components/About";
+import { ABOUT_ROUTE, SDSYNC_ROUTE } from "./selection";
 import { getPatchFailure, patchGamePage } from "./steam-page-patch";
 
 /** Skan karty → dodanie każdej rozpoznanej gry. Sama logika dodawania siedzi w
@@ -216,6 +217,12 @@ function Panel() {
         </ButtonItem>
       </PanelSectionRow>
       {showLog && <EventLog />}
+
+      <PanelSectionRow>
+        <ButtonItem layout="below" onClick={() => Navigation.Navigate(ABOUT_ROUTE)}>
+          {t("qa.about_button")}
+        </ButtonItem>
+      </PanelSectionRow>
 
       <PanelSectionRow>
         <ButtonItem layout="below" onClick={() => setShowSettings((visible) => !visible)}>
@@ -439,6 +446,11 @@ export default definePlugin(() => {
   // musi być OPCJONALNY i na jednej trasie: dwie osobne trasy przemontowywałyby ekran
   // przy każdym kliknięciu w spis.
   routerHook.addRoute(`${SDSYNC_ROUTE}/:key?`, SdSyncPage, { exact: true });
+  // „O wtyczce" ma WŁASNY ekran, nie pozycję w spisie gier: spis odpowiada na „co
+  // z moimi grami", a About na „co ta wtyczka robi". `:cat?` z tego samego powodu co
+  // `:key?` wyżej — SidebarNavigation w środku jest route-driven i bez istniejącej
+  // trasy jego `history.replace` wyprowadza z naszego ekranu.
+  routerHook.addRoute(`${ABOUT_ROUTE}/:cat?`, About, { exact: true });
   // sekcja na ekranie gry: gdy Steam przestawi układ, wstrzyknięcie się nie uda —
   // log zdarzeń i panel muszą to pokazać, cisza wyglądałaby jak „nie ma nic"
   // Patch trasy biblioteki jest tylko WYZWALACZEM: React nie daje nam kafelka do
@@ -469,6 +481,7 @@ export default definePlugin(() => {
       routerHook.removePatch("/library", unpatchLibrary);
       unpatchGamePage();
       routerHook.removeRoute(`${SDSYNC_ROUTE}/:key?`);
+      routerHook.removeRoute(`${ABOUT_ROUTE}/:cat?`);
       delete (window as any).SDSync;
     },
   };

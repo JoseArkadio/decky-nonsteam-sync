@@ -7,6 +7,8 @@ SteamOS box.
 
 Insert the card, press Play. The save is where it should be.
 
+![The plugin's own screen: the game list on the left, everything known about the selected game on the right](assets/game-screen.png)
+
 > **Status:** works on real hardware, still in testing. Not on the Decky plugin
 > store yet — install from [Releases](../../releases). Interface is available in
 > English and Polish, picked up from your Steam language.
@@ -39,13 +41,30 @@ Insert the card, press Play. The save is where it should be.
   hardware compatibility, current player count and
   [HowLongToBeat](https://howlongtobeat.com) completion times. Fetched on demand,
   never in the background.
+![A card on Steam's own game page: card status, release date, description, Metacritic score, compatibility, completion times and current player count](assets/game-page.png)
+
+Everything on that card is information Steam has nowhere on the page for a non-Steam
+shortcut — the three buttons are there because syncing before you press Play and
+reaching the store page would otherwise mean leaving this screen.
+
 - **Tracks playtime itself** and carries the total on the card, so the number on
   the tile is the sum across devices rather than one machine's share.
 - **Marks cards on the tile** — a green dot when the card is in the reader, white
   when it isn't, with a greyscale cover so you notice before you press Play.
+![The same game page with the card out: the artwork is greyscale, the dot is white and the card says "no card"](assets/game-page-no-card.png)
+
+![Library covers in greyscale with an SD-card badge, except the one game whose card is in the reader](assets/library.png)
+
+Above: every game on cards that are not in the reader is greyscale with a white badge.
+The one still in colour is on the card currently inserted. You find out before you
+press Play, not after Steam fails to find the file.
+
 - **Disables the Steamworks decoy** (`steam_appid.txt`) when adding a game, so
   Steam does not log your session against the store version of that game. This is
   reversible.
+- **Explains itself.** An *About this plugin* screen groups every feature into eight
+  categories and carries step-by-step setup for the parts that need it — Ludusavi and
+  rclone, the SteamGridDB key, the first scan. Reachable from the Quick Access panel.
 
 ## How it decides where the newest save is
 
@@ -95,6 +114,13 @@ this plugin — both would push saves to the same cloud and manufacture conflict
 
 Optional, in the plugin's settings: your SteamGridDB API key, interface language,
 and where the card dot is drawn on the tile.
+
+Everything else is explained inside the plugin — **About this plugin** in the Quick
+Access panel:
+
+![The About screen: eight categories on the left, "Getting started" open on the right](assets/about.png)
+
+![The Cloud category: what the cloud is for, and a three-step setup for Ludusavi and rclone](assets/about-cloud.png)
 
 ## Development
 

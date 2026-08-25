@@ -281,9 +281,23 @@ export function refreshBadges(
  *  Celujemy po APPID W ADRESIE grafiki: klasy Steama są zahaszowane i zmieniają się
  *  między wersjami, a `/customimages/<appid>_hero.png` nie. Dzięki temu szarzeje
  *  dokładnie ta jedna gra.
+ *
+ *  DOKUMENT PRZYCHODZI Z ZEWNĄTRZ i to jest poprawka błędu, nie ozdoba sygnatury.
+ *  Wcześniej funkcja brała gołe `document`, a kod wtyczki wykonuje się w
+ *  SharedJSContext — czyli reguła lądowała w dokumencie, który ma 18 elementów i ani
+ *  jednego obrazka, a widoczny interfejs renderuje się w oknie „Steam Big Picture
+ *  Mode". ZMIERZONE na Decku 2026-08-25: `style[id^=sdsync-grey]` nie było w ŻADNYM
+ *  z tych dokumentów (SharedJSContext ma `head`, więc `appendChild` się udawał i nic
+ *  nie rzucało — awaria wyglądała jak brak efektu). Ta sama reguła wstrzyknięta
+ *  ręcznie do okna Big Picture dała na hero `filter: grayscale(1)`, czyli SELEKTOR
+ *  był poprawny od początku.
+ *  `bigPictureDocument()` z tego pliku tu NIE WYSTARCZY: rozpoznaje okno po
+ *  `div[role=gridcell], div[role=listitem]`, a na ekranie gry tych elementów jest
+ *  ZERO we wszystkich oknach (zmierzone) — na ekranie biblioteki 41, i właśnie na
+ *  niej pomiar najpierw wprowadził mnie w błąd. Jedyne pewne źródło to `ownerDocument`
+ *  elementu, który NASZ panel już wyrenderował.
  */
-export function greyGamePage(appid: number, szare: boolean): void {
-  const doc = typeof document === "undefined" ? null : document;
+export function greyGamePage(appid: number, szare: boolean, doc: Document | null): void {
   if (!doc) return;
   const id = `sdsync-grey-${appid}`;
   const stary = doc.getElementById(id);

@@ -1,7 +1,10 @@
-import { ButtonItem, PanelSection, PanelSectionRow } from "@decky/ui";
+import { PanelSection, PanelSectionRow, SidebarNavigation } from "@decky/ui";
 import { useEffect, useState } from "react";
 import { about, AboutInfo } from "../backend";
+import { aboutRoute } from "../selection";
+import { SidebarColumnWidth } from "../steam-page-patch";
 import { t } from "../i18n";
+import { useLang } from "../i18n/resolve";
 
 /** Kategorie w kolejności, w jakiej człowiek ich potrzebuje: najpierw „jak zacząć",
  *  potem co wtyczka robi, na końcu co zrobić, gdy nie działa.
@@ -10,7 +13,8 @@ import { t } from "../i18n";
  *  tak samo jak w `stage.ts` — dołożenie kategorii to jeden wpis tutaj plus dwa
  *  hasła w KAŻDYM katalogu. Pilnuje tego `tests/test_i18n.py`, bo brakujące hasło
  *  w OBU katalogach naraz nie złamałoby testu na ich zgodność, a w interfejsie
- *  wypisałoby goły klucz. */
+ *  wypisałoby goły klucz. Nazwa jest też SEGMENTEM ADRESU (`aboutRoute`), więc
+ *  wolno w niej tylko [a-z_]. */
 export const KATEGORIE = [
   "start",
   "tiles",
@@ -22,78 +26,89 @@ export const KATEGORIE = [
   "trouble",
 ] as const;
 
-/** Ekran „O wtyczce": co robi, pogrupowane, plus tutoriale konfiguracji.
+/** Ekran „O wtyczce": co wtyczka robi, pogrupowane, plus tutoriale konfiguracji.
  *
- *  Harmonijka, nie jedna długa strona, i to nie jest kwestia gustu. ZMIERZONE na
- *  urządzeniu przy logu zdarzeń (patrz komentarz w `EventLog.tsx`): długa treść bez
- *  celów zaznaczenia w pozycji spisu robi ślepy zaułek dla pada — zaznaczenie
- *  zostaje w przewijanej treści i nie ma jak wrócić w górę do spisu. Tutaj każda
- *  kategoria jest przyciskiem, czyli celem zaznaczenia, a otwarta jest najwyżej
- *  jedna, więc strona nigdy nie rośnie na tyle, żeby powrót wymagał przewijania. */
+ *  WŁASNY widok pod własną trasą, a nie pozycja w spisie gier. Spis gier odpowiada na
+ *  „co z moimi grami", a to odpowiada na „co ta wtyczka w ogóle robi" — dwa różne
+ *  pytania, więc dwa ekrany. Efekt uboczny, który jest tu wartością: kategorie nie
+ *  muszą się zwijać, bo nie konkurują o miejsce z listą gier.
+ *
+ *  `SidebarNavigation` jest ROUTE-DRIVEN i to nie jest ozdoba: przy każdej zmianie
+ *  strony robi `history.replace(route)`, więc trasa musi ISTNIEĆ w routerze, inaczej
+ *  nawigacja wyprowadza z naszego ekranu i wszystko znika (ZMIERZONE na Decku przy
+ *  ekranie gier — patrz AGENTS.md). Stąd `${ABOUT_ROUTE}/:cat?` w `index.tsx`
+ *  i `aboutRoute()` na każdej pozycji. `page` NIE podajemy: trasa jest jedynym
+ *  źródłem prawdy, a drugie rozjeżdżało się z nią przy wejściu bez parametru. */
 export function About() {
-  const [otwarta, setOtwarta] = useState<string | null>("start");
+  useLang(); // korzeń w osobnym drzewie React — bez tego napisy tu nie przerysują się
   const [info, setInfo] = useState<AboutInfo | null>(null);
 
   useEffect(() => {
-    // wersja jest tu najważniejszą pojedynczą informacją przy zgłaszaniu błędu,
-    // ale jej brak nie może zabrać całej treści ekranu — stąd cichy zapas niżej
+    // wersja jest przy zgłaszaniu błędu najważniejszą pojedynczą informacją, ale jej
+    // brak nie może zabrać treści ekranu — stąd cichy zapas w `version_unknown`
     about()
       .then(setInfo)
       .catch(() => undefined);
   }, []);
 
+  const pages = KATEGORIE.map((nazwa) => ({
+    title: t(`ui.about.cat_${nazwa}`),
+    route: aboutRoute(nazwa),
+    content: (
+      // BEZ `title`: SidebarNavigation rysuje tytuł strony sam, więc `title` tutaj
+      // dawał ten sam napis trzy razy pod rząd (pozycja w spisie, nagłówek strony,
+      // nagłówek sekcji) — ZMIERZONE na zrzucie z Decka.
+      <PanelSection>
+        {nazwa === "start" && (
+          <PanelSectionRow>
+            {/* Blok wstępny jest ODDZIELONY kreską i wyraźnie większym odstępem od
+                treści kategorii. Nie kosmetyka: bez tego wersja czytała się jako
+                pierwsze zdanie tutoriala (ZMIERZONE na zrzucie z Decka). Odstęp
+                MIĘDZY grupami musi być wyraźnie większy niż wewnątrz grupy. */}
+            <div
+              style={{
+                fontSize: "0.9em",
+                lineHeight: 1.45,
+                opacity: 0.85,
+                paddingBottom: "14px",
+                marginBottom: "16px",
+                borderBottom: "1px solid rgba(255,255,255,0.12)",
+              }}
+            >
+              {t("ui.about.tagline")}
+              <div style={{ fontSize: "0.85em", opacity: 0.6, marginTop: "8px" }}>
+                {info
+                  ? t("ui.about.version", { version: info.version, decky: info.decky })
+                  : t("ui.about.version_unknown")}
+              </div>
+            </div>
+          </PanelSectionRow>
+        )}
+        <PanelSectionRow>
+          {/* pre-wrap, bo treść kategorii jest JEDNYM hasłem z własnym łamaniem
+              wierszy: osiem kategorii rozbitych na osobne klucze per punkt to ~80
+              haseł w każdym katalogu zamiast 16, a układ i tak niesie sam tekst
+              (• dla funkcji, 1. dla kroków tutoriala) */}
+          <div
+            style={{
+              fontSize: "0.9em",
+              lineHeight: 1.55,
+              whiteSpace: "pre-wrap",
+              opacity: 0.9,
+            }}
+          >
+            {t(`ui.about.body_${nazwa}`)}
+          </div>
+        </PanelSectionRow>
+      </PanelSection>
+    ),
+  }));
+
   return (
     <>
-      <PanelSection title={t("ui.about.title")}>
-        <PanelSectionRow>
-          <div style={{ fontSize: "0.85em", lineHeight: 1.45, opacity: 0.85 }}>
-            {t("ui.about.tagline")}
-          </div>
-        </PanelSectionRow>
-        <PanelSectionRow>
-          <div style={{ fontSize: "0.8em", opacity: 0.6 }}>
-            {info
-              ? t("ui.about.version", { version: info.version, decky: info.decky })
-              : t("ui.about.version_unknown")}
-          </div>
-        </PanelSectionRow>
-      </PanelSection>
-
-      <PanelSection title={t("ui.about.sections")}>
-        {KATEGORIE.map((nazwa) => {
-          const otwarte = otwarta === nazwa;
-          return (
-            <div key={nazwa}>
-              <PanelSectionRow>
-                <ButtonItem
-                  layout="below"
-                  onClick={() => setOtwarta(otwarte ? null : nazwa)}
-                >
-                  {(otwarte ? "▾ " : "▸ ") + t(`ui.about.cat_${nazwa}`)}
-                </ButtonItem>
-              </PanelSectionRow>
-              {otwarte && (
-                <PanelSectionRow>
-                  {/* pre-wrap, bo treść kategorii jest JEDNYM hasłem z własnym
-                      łamaniem wierszy: osiem kategorii rozbitych na osobne klucze
-                      per punkt to ~80 haseł w każdym katalogu zamiast 16, a układ
-                      i tak niesie sam tekst (• dla funkcji, 1. dla kroków) */}
-                  <div
-                    style={{
-                      fontSize: "0.85em",
-                      lineHeight: 1.5,
-                      whiteSpace: "pre-wrap",
-                      opacity: 0.9,
-                    }}
-                  >
-                    {t(`ui.about.body_${nazwa}`)}
-                  </div>
-                </PanelSectionRow>
-              )}
-            </div>
-          );
-        })}
-      </PanelSection>
+      <SidebarColumnWidth />
+      {/* disableRouteReporting: nasze trasy wstrzykuje Decky, Steam nie ma ich u siebie */}
+      <SidebarNavigation title={t("ui.about.title")} pages={pages} disableRouteReporting />
     </>
   );
 }

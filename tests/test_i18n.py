@@ -226,6 +226,13 @@ PRZYCISKI = {
     # nagłówki wiersza faktów o graniu — stoją obok siebie w jednej linii
     "ui.hltb.label": BUDZET_POLOWA,
     "ui.players.label": BUDZET_TRZECIA,
+    # pozycje spisu na ekranie „O wtyczce" — kolumna spisu jest STAŁEJ szerokości
+    # (SidebarColumnWidth), więc za długa etykieta nie zawija się, tylko jest UCINANA.
+    # ZMIERZONE na Decku: „When something goes wrong" (24 znaki) skończyło się na
+    # „…goes wron", a „Game information" (16) zmieściło się z zapasem. Budżet 20
+    # zostawia margines na języki gęstsze od polskiego i angielskiego.
+    **{"ui.about.cat_%s" % k: 20 for k in
+       ("start", "tiles", "saves", "cloud", "art", "info", "playtime", "trouble")},
 }
 
 

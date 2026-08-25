@@ -48,3 +48,16 @@ export const SDSYNC_ROUTE = "/sdsync";
  *  nadaje się do adresu bez kodowania. Strony nie-gier mają wiodący myślnik —
  *  title_key nigdy się tak nie zaczyna (`strip("-")`), więc kolizja jest niemożliwa. */
 export const gameRoute = (titleKey: string): string => `${SDSYNC_ROUTE}/${titleKey}`;
+
+/** Ekran „O wtyczce" ma WŁASNĄ trasę, nie pozycję w spisie gier.
+ *
+ *  Osobny prefiks, a nie `/sdsync/about`: ta druga wpadłaby w `/sdsync/:key?` jako
+ *  klucz gry „about". Dziś by zadziałała (żadna gra nie ma takiego klucza), ale
+ *  zależałaby od tego, że nikt nigdy nie doda gry o tytule „About" — a to nie jest
+ *  niezmiennik, który wolno przyjąć. Strony nie-gier w spisie gier rozwiązują to
+ *  wiodącym myślnikiem; tutaj rozwiązuje to osobna trasa. */
+export const ABOUT_ROUTE = "/sdsync-about";
+
+/** Trasa jednej kategorii. Nazwy kategorii są z [a-z_] (patrz KATEGORIE w About.tsx),
+ *  więc nadają się do adresu bez kodowania. */
+export const aboutRoute = (kategoria: string): string => `${ABOUT_ROUTE}/${kategoria}`;
