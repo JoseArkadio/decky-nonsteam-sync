@@ -112,6 +112,8 @@ this plugin — both would push saves to the same cloud and manufacture conflict
    the release asset URL. (Or copy the zip to the device and use a `file://` URL.)
 3. Open **NonSteam Sync** in the Quick Access panel and press **Scan SD card**.
 
+![The Quick Access panel: game count and which card is in the reader, then Sync now, Scan SD card, Open game list, Events, About this plugin, Settings](assets/panel.png)
+
 Optional, in the plugin's settings: your SteamGridDB API key, interface language,
 and where the card dot is drawn on the tile.
 
