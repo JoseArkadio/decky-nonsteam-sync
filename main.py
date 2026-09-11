@@ -1016,62 +1016,46 @@ class Plugin:
             return {"title": None, "ok": False, "conflict": False,
                     "error": msg("appid_not_ours", appid=appid)}
         title = record["title"]
-        saves = self._saves()
         log = self._log()
+        # Karta jest transportem zapisów: leży przy grze, nie potrzebuje sieci i wraca
+        # do drugiego urządzenia razem z grą. Chmura jest kopią i idzie DRUGA.
+        # Bez karty w czytniku NIE ROBIMY NIC — ani chmury, ani kopii lokalnej:
+        # `saves.backup()` odświeża katalog, wobec którego mierzy się `local_changed`,
+        # czyli zatarłby jedyną pamięć o tym postępie (AGENTS.md, Animal Well
+        # 2026-09-11). Sprawdzane PRZED zamkiem i przed Ludusavim: nie ma po co
+        # forkować flatpaka, a przy zajętym zamku użytkownik dostałby „odłożono",
+        # choć nic nie miało się odłożyć. To stan normalny, nie awaria — log „push".
+        card_dir = self._card_saves_dir(record)
+        if not card_dir:
+            note = msg("push_card_absent", title=title)
+            log.add("push", note)
+            return {"title": title, "ok": False, "conflict": False, "error": note}
+        saves = self._saves()
         try:
             # ten sam zamek plikowy co synchronizacja: backup(cloud=True) to rclone
             # W GÓRĘ na katalogu kopii, po którym trwający przebieg jedzie W DÓŁ
             with saves.lock():
-                # Karta jest transportem zapisów: leży przy grze, nie potrzebuje sieci
-                # i wraca do drugiego urządzenia razem z grą. Chmura jest kopią i idzie
-                # DRUGA — gdyby dostała stan, którego nie ma karta, drugie urządzenie
-                # widziałoby „karta bez zmian" i grało od starszego zapisu.
-                card_dir = self._card_saves_dir(record)
-                on_card = None
-                if not card_dir:
-                    # Karty nie ma w czytniku. Wyjście „to wyślijmy chociaż do chmury"
-                    # jest PODWÓJNIE złe i ZMIERZONE na Decku 2026-09-11 (Animal Well):
-                    # łamie niezmiennik (chmura przed kartą), a przy okazji zaciera
-                    # jedyny ślad po tym postępie — `saves.backup()` odświeża LOKALNY
-                    # katalog kopii, a to WOBEC NIEGO mierzy się `local_changed`.
-                    # Urządzenie wygląda potem na czyste, więc przy najbliższym
-                    # włożeniu karty tabela decyzyjna mówi `restore` i starszy zapis
-                    # z drugiej maszyny nadpisuje nowszy tutaj, meldując sukces.
-                    # Zostawiamy zapis u siebie: `local_changed` pozostaje prawdą,
-                    # a fazie karty (`skip` + `changed` → `_carry_to_card`) nie
-                    # brakuje wtedy niczego, żeby go wywieźć kartą PRZED chmurą.
-                    problem = msg("push_card_absent", title=title)
+                on_card = saves.card_backup_many([title], card_dir).get(title)
+                if on_card is False:
+                    # bez `pending_push`: ta flaga znaczy „karta ma, chmura jeszcze
+                    # nie", a karta właśnie NIE dostała — wywiezie to faza karty
+                    problem = msg("push_no_card", title=title,
+                                 detail=_stderr_hint(saves))
                     log.add("error", problem)
                     return {"title": title, "ok": False, "conflict": False,
                             "error": problem}
-                if card_dir:
-                    on_card = saves.card_backup_many([title], card_dir).get(title)
-                    if on_card is not False:
-                        # tożsamość kopii MUSI trafić do rejestru tu, nie tylko
-                        # w przebiegu synchronizacji — inaczej następny przebieg
-                        # przywraca własną kopię z karty bez powodu
-                        remember_card_copy(
-                            registry, record, card_dir,
-                            (saves.card_when_many([title], card_dir) or {}).get(title))
-                    if on_card is False:
-                        # BEZ `pending_push`: karta tego nie dostała, a zaległa wysyłka
-                        # w `sync_all` idzie prosto przez `backup(cloud=True)`, czyli
-                        # z pominięciem karty. Flaga byłaby drugą drogą do tego samego
-                        # złamania niezmiennika, tylko przebieg później. Pamięcią o
-                        # niewywiezionym postępie jest `local_changed`.
-                        problem = msg("push_no_card", title=title,
-                                     detail=_stderr_hint(saves))
-                        log.add("error", problem)
-                        return {"title": title, "ok": False, "conflict": False,
-                                "error": problem}
+                # tożsamość kopii MUSI trafić do rejestru tu, nie tylko w przebiegu
+                # synchronizacji — inaczej następny przebieg przywraca własną kopię
+                # z karty bez powodu
+                remember_card_copy(
+                    registry, record, card_dir,
+                    (saves.card_when_many([title], card_dir) or {}).get(title))
                 if not self._cloud_enabled() or saves.cloud_configured() is False:
                     # Chmura jest kopią zapasową, nie transportem: kto jej nie
                     # skonfigurował, ma dostać działającą wtyczkę. Ale „nie ma gdzie
                     # zapisać" NIE może wyglądać jak sukces.
                     if on_card is not True:
-                        problem = (msg("push_nowhere_no_card", title=title)
-                                  if not card_dir
-                                  else msg("push_nowhere_no_saves", title=title))
+                        problem = msg("push_nowhere_no_saves", title=title)
                         log.add("error", problem)
                         return {"title": title, "ok": False, "conflict": False,
                                 "error": problem}
@@ -1082,10 +1066,8 @@ class Plugin:
                     return {"title": title, "ok": True, "conflict": False}
                 outcome = saves.backup(title)
         except SyncLocked as exc:
-            # Zapis użytkownika NIE może zginąć po cichu — i najbliższy przebieg go
-            # dokończy, ale fazą KARTY, nie zaległą wysyłką: zamek był zajęty, więc
-            # karta niczego nie dostała, a `pending_push` wysłałoby to samo do chmury
-            # przed kartą. `local_changed` pamięta ten postęp tak samo dobrze.
+            # bez `pending_push` (patrz wyżej): zamek był zajęty, więc karta niczego
+            # nie dostała; `local_changed` pamięta ten postęp i faza karty go wywiezie
             problem = msg("push_deferred", title=title, detail=str(exc))
             log.add("error", problem)
             return {"title": title, "ok": False, "conflict": False, "error": problem}
@@ -1097,7 +1079,9 @@ class Plugin:
         elif outcome["conflict"]:
             fields["conflict"] = True
         else:
-            fields["pending_push"] = True
+            # „karta ma, chmura jeszcze nie" — więc tylko przy potwierdzonej kopii na
+            # karcie; `None` (gra bez zapisów) flagowałoby wieczną zaległość
+            fields["pending_push"] = on_card is True
         if fields:
             registry.set_fields(record["title_key"], **fields)
         if outcome["ok"]:
@@ -1170,7 +1154,10 @@ class Plugin:
         saves = self._saves()
         log = self._log()
         card_dir = self._card_saves_dir(record)
-        if choice == "card" and not card_dir:
+        # „local" też wymaga karty: bez niej ta gałąź szłaby `backup(cloud=False)` +
+        # `cloud_upload` — chmura przed kartą i zatarte `local_changed`, czyli ta sama
+        # awaria, którą naprawiono w `_push_after_game` (Animal Well 2026-09-11)
+        if choice in ("card", "local") and not card_dir:
             return {"ok": False, "error": msg("card_not_in_reader", title=title)}
         try:
             # ten sam zamek plikowy co synchronizacja: rozstrzyganie konfliktu rusza
@@ -1200,15 +1187,13 @@ class Plugin:
                     # chmura mogła wyprzedzić kartę, a wtedy drugie urządzenie widzi
                     # „karta bez zmian", gra od starszego zapisu i nie ma jak dowiedzieć
                     # się o nowszym (ten scenariusz z pociągu z AGENTS.md).
-                    ok = True
-                    if card_dir:
-                        ok = (saves.card_backup_many([title], card_dir) or {}).get(title) is True
-                        if ok:
-                            swiezy = saves.card_when_many([title], card_dir) or {}
-                            remember_card_copy(registry, record, card_dir,
-                                               swiezy.get(title))
-                        else:
-                            log.add("error", msg("card_write_failed", title=title))
+                    ok = (saves.card_backup_many([title], card_dir) or {}).get(title) is True
+                    if ok:
+                        swiezy = saves.card_when_many([title], card_dir) or {}
+                        remember_card_copy(registry, record, card_dir,
+                                           swiezy.get(title))
+                    else:
+                        log.add("error", msg("card_write_failed", title=title))
                     # filtr gry OBOWIĄZKOWY: bez listy gier operacja chmurowa
                     # przepisuje CAŁĄ chmurę stanem lokalnym — po przełożeniu karty
                     # to utrata kopii pozostałych gier

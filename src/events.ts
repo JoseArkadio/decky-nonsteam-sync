@@ -199,6 +199,12 @@ async function afterGame(appid: number, running: boolean): Promise<void> {
   startBadgePolling(); // kafelek to kosmetyka, nie blokuje wysyłki
   const result = await pushAfterGame(appid);
   if (!result.title) return; // nie nasza gra (albo appid poza rejestrem)
+  if (result.error?.code === "push_card_absent") {
+    // stan normalny, nie awaria: bez karty zapis celowo zostaje na urządzeniu —
+    // czerwony „wysyłka nieudana" uczyłby ignorować toast, który ma krzyczeć naprawdę
+    toaster.toast({ title: "NonSteam Sync", body: t("qa.toast_push_kept_local_body", { title: result.title }) });
+    return;
+  }
   if (result.ok && !result.conflict) {
     toaster.toast({ title: "NonSteam Sync", body: t("qa.toast_push_ok_body", { title: result.title }) });
     return;

@@ -41,7 +41,7 @@ export interface GameRecord extends Failable {
   proton: string | null;
   steamworks_neutralized: boolean;
   artwork_done: boolean;
-  pending_push: boolean; // wysyłka odłożona (zajęty zamek albo chmura padła)
+  pending_push: boolean; // karta MA ten stan, chmura jeszcze nie (nic innego)
   last_push_ts: number | null;
   last_backup_ts: number | null;
   excluded: boolean;

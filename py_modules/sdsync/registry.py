@@ -26,7 +26,7 @@ FIELDS = {
     # ostatnia znana suma ze WSZYSTKICH urządzeń — bez karty plik wymiany jest
     # nieczytelny, a liczba na kafelku nie może wtedy maleć
     "playtime_total_seen": 0,    # czas gry NA TYM urządzeniu; sumę wozi karta
-    "pending_push": False,   # wysyłka odłożona: zamek był zajęty albo chmura padła
+    "pending_push": False,   # karta MA ten stan, chmura jeszcze nie (nic innego)
     "last_push_ts": None,
     "last_backup_ts": None,
     # {etykieta karty: `when` kopii, którą na tej karcie widzieliśmy ostatnio}.

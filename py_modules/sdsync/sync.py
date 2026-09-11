@@ -84,18 +84,6 @@ class SyncService:
         if not records:
             return result
 
-        # Odłożone wysyłki idą PRZED odczytem stanu chmury: inaczej podgląd zobaczyłby
-        # lokalną kopię, której w chmurze jeszcze nie ma, i uznał to za rozjazd.
-        pending = [r for r in records if r.get("pending_push")]
-        if pending:
-            with clock("zalegle_wysylki"):
-                for record in pending:
-                    if self.saves.backup(record["title"], cloud=True)["ok"]:
-                        self.registry.set_fields(record["title_key"], pending_push=False)
-                    else:
-                        result["errors"].append(
-                            msg("pending_push_still_failing", title=record["title"]))
-
         # Gry, o których Ludusavi już raz powiedział, że ich nie zna, w ogóle nie
         # wchodzą do wywołań: jedna taka nazwa wywala CAŁE polecenie i zamienia
         # wszystkie gry w konflikty (ZMIERZONE na Decku). Milczeć o nich nie wolno —
@@ -221,9 +209,18 @@ class SyncService:
                     self._note(record, verdict, result)
                 if verdict == "restore" and not dysk:
                     to_restore.append((record, path, label))
-                elif verdict == "skip" and changed.get(title):
+                elif verdict == "skip" and (changed.get(title)
+                                            or record.get("pending_push")):
                     # graliśmy, a karta o tym nie wie (np. brak sieci w pociągu albo
-                    # wyjęta karta przy wyjściu z gry) — trzeba to na nią wywieźć
+                    # wyjęta karta przy wyjściu z gry) — trzeba to na nią wywieźć.
+                    # Zaległa wysyłka do chmury idzie TĄ SAMĄ drogą, nie osobną pętlą
+                    # przed podglądem: tamta wołała `backup(cloud=True)` bez karty, czyli
+                    # wysyłała ŻYWY stan (nie ten, który karta dostała) i odświeżała
+                    # lokalną kopię, zacierając `local_changed`. Tu karta jest w czytniku
+                    # i idzie pierwsza — niezmiennik trzyma się z konstrukcji.
+                    # ponytail: przy samym `pending_push` (karta ma, chmura nie) kopia na
+                    # kartę jest zbędna i kosztuje jedno wywołanie; osobna lista „tylko
+                    # chmura" wtedy, gdy ktoś to zmierzy jako problem.
                     to_write.append((record, path, label))
 
         if to_restore:

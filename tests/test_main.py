@@ -249,8 +249,11 @@ def test_rozstrzyganie_konfliktu_tez_bierze_zamek(tmp_path):
 def test_konflikt_lokalny_wysyla_do_chmury_tylko_te_gre(tmp_path):
     """Bez filtra gry cloud_upload() przepisuje CAŁĄ chmurę stanem lokalnym."""
     _, plugin, saves = _plugin(tmp_path)
+    # karta w czytniku: „local" bez karty ODMAWIA (test niżej), więc tu jej trzeba
+    plugin._card_mount = lambda record: str(tmp_path / "SD256")
     result = asyncio.run(plugin.resolve_conflict("animal-well", "local"))
     assert result["ok"] is True, result
+    assert saves.calls.index("card_backup") < saves.calls.index("cloud_upload"), saves.calls
     assert saves.cloud_args["upload"] == ["Animal Well"], saves.cloud_args
 
 
@@ -407,6 +410,10 @@ def test_push_after_game_never_runs_while_a_sync_holds_the_lock(tmp_path):
 
     async def scenario():
         _, plugin, saves = _plugin(tmp_path)
+        # karta MUSI być w czytniku: bez niej wyjście z gry kończy się PRZED zamkiem
+        # (gałąź `push_card_absent`) i ten test przechodziłby po usunięciu zamka —
+        # ZMIERZONE kontrolą mutacyjną w recenzji PR #22
+        plugin._card_mount = lambda record: str(tmp_path / "SD256")
         task = asyncio.create_task(plugin.sync_all())
         await asyncio.sleep(SLOW / 2)          # przebieg trwa i trzyma zamek
         result = await plugin.push_after_game(4242)
@@ -415,7 +422,7 @@ def test_push_after_game_never_runs_while_a_sync_holds_the_lock(tmp_path):
 
     result, saves = asyncio.run(scenario())
     assert result["ok"] is False, "wysyłka weszła w katalog kopii w trakcie przebiegu"
-    assert "error" in result
+    assert result["error"]["code"] == "push_deferred", result
 
 
 def test_zajety_zamek_zglasza_awarie_ale_nie_odklada_wysylki_do_chmury(tmp_path):
@@ -434,6 +441,7 @@ def test_zajety_zamek_zglasza_awarie_ale_nie_odklada_wysylki_do_chmury(tmp_path)
 
     async def scenario():
         main, plugin, _ = _plugin(tmp_path)
+        plugin._card_mount = lambda record: str(tmp_path / "SD256")  # patrz test wyżej
         task = asyncio.create_task(plugin.sync_all())
         await asyncio.sleep(SLOW / 2)
         wynik = await plugin.push_after_game(4242)
@@ -441,7 +449,7 @@ def test_zajety_zamek_zglasza_awarie_ale_nie_odklada_wysylki_do_chmury(tmp_path)
         return main, wynik
 
     main, wynik = asyncio.run(scenario())
-    assert wynik["ok"] is False and wynik.get("error"), wynik
+    assert wynik["ok"] is False and wynik["error"]["code"] == "push_deferred", wynik
     record = Registry(os.path.join(
         main.decky.DECKY_PLUGIN_SETTINGS_DIR, "games.json")).get("animal-well")
     assert record["pending_push"] is False, record
@@ -728,28 +736,50 @@ def test_bez_karty_w_czytniku_nic_nie_wychodzi_poza_urzadzenie(tmp_path):
     """
 
     async def scenario():
-        _, plugin, saves = _plugin(tmp_path)
+        main, plugin, saves = _plugin(tmp_path)
         plugin._card_mount = lambda record: None
-        return await plugin.push_after_game(4242), saves
+        wynik = await plugin.push_after_game(4242)
+        record = Registry(os.path.join(
+            main.decky.DECKY_PLUGIN_SETTINGS_DIR, "games.json")).get("animal-well")
+        return wynik, saves, record, await plugin.log_tail(20)
 
-    result, saves = asyncio.run(scenario())
-    assert "backup" not in saves.calls, saves.calls
-    assert "card_backup" not in saves.calls, saves.calls
-    assert result["ok"] is False and result.get("error"), result
+    result, saves, record, events = asyncio.run(scenario())
+    assert saves.calls == [], saves.calls   # ani karta, ani kopia lokalna, ani chmura
+    assert result["ok"] is False and result["error"]["code"] == "push_card_absent", result
+    # `pending_push` znaczy „karta MA, chmura nie" — a karta nic nie dostała
+    assert record["pending_push"] is False, record
+    # stan normalny, nie awaria: wpis „push", nie „error" (czerwony toast uczyłby
+    # ignorować ten, który ma krzyczeć przy prawdziwej awarii kopii na kartę)
+    kinds = [e["kind"] for e in events if "push_card_absent" in str(e)]
+    assert kinds == ["push"], events
 
 
-def test_bez_karty_wyjscie_z_gry_nie_odklada_wysylki_do_chmury(tmp_path):
-    """`pending_push` znaczy DOKŁADNIE „karta to ma, chmura jeszcze nie".
-
-    Zaległe wysyłki idą w `sync_all` prosto przez `backup(cloud=True)`, z pominięciem
-    karty (sync.py:89-97). Oflagowanie gry, której karta NIE dostała, zamieniłoby więc
-    tę pętlę w drugą drogę łamania tego samego niezmiennika — tyle że jeden przebieg
-    później, gdzie nikt jej już nie wiąże z wyjściem z gry.
-    """
+def test_wyslij_moj_zapis_bez_karty_odmawia(tmp_path):
+    """Recenzja PR #22: „Wyślij mój zapis" bez karty robiło `backup(cloud=False)` +
+    `cloud_upload` — chmura przed kartą i zatarte `local_changed`, czyli DOKŁADNIE ta
+    awaria, którą naprawiono na wyjściu z gry, tylko drzwi obok. Odmawia jak `card`."""
 
     async def scenario():
-        main, plugin, _ = _plugin(tmp_path)
+        _, plugin, saves = _plugin(tmp_path)
         plugin._card_mount = lambda record: None
+        return await plugin.resolve_conflict("animal-well", "local"), saves
+
+    result, saves = asyncio.run(scenario())
+    assert result["ok"] is False and result["error"]["code"] == "card_not_in_reader", result
+    assert saves.calls == [], saves.calls
+
+
+def test_gra_bez_zapisow_nie_dostaje_wiecznej_zaleglosci(tmp_path):
+    """`on_card is None` = ta gra nie ma tu zapisów, więc karta NIE MA żadnego stanu.
+    Gdy potem chmura padnie, `pending_push=True` znaczyłoby „karta ma, chmura nie" —
+    kłamstwo, które co przebieg próbowałoby wysłać nic i meldowało błąd bez końca."""
+
+    async def scenario():
+        main, plugin, saves = _plugin(tmp_path)
+        plugin._card_mount = lambda record: str(tmp_path / "SD256")
+        saves.card_ok = None
+        saves.backup = lambda title, cloud=True: {"ok": False, "changed_bytes": 0,
+                                                  "conflict": False}
         await plugin.push_after_game(4242)
         return Registry(os.path.join(
             main.decky.DECKY_PLUGIN_SETTINGS_DIR, "games.json")).get("animal-well")
@@ -808,8 +838,10 @@ def test_bez_chmury_i_bez_karty_wysylka_nie_udaje_sukcesu(tmp_path):
         return await plugin.push_after_game(4242), saves
 
     result, saves = asyncio.run(scenario())
-    assert result["ok"] is False and result.get("error")
-    assert "backup" not in saves.calls
+    assert result["ok"] is False
+    # bez karty rozstrzyga sama karta, zanim ktokolwiek spyta o chmurę
+    assert result["error"]["code"] == "push_card_absent", result
+    assert saves.calls == [], saves.calls
 
 
 def test_suma_czasu_gry_przezywa_wyjecie_karty(tmp_path):
@@ -1175,8 +1207,8 @@ def test_tylko_karta_bez_karty_nie_udaje_sukcesu(tmp_path):
         return await plugin.push_after_game(4242), saves
 
     result, saves = asyncio.run(scenario())
-    assert result["ok"] is False and result.get("error")
-    assert "backup" not in saves.calls
+    assert result["ok"] is False and result["error"]["code"] == "push_card_absent", result
+    assert saves.calls == [], saves.calls
 
 
 # --- gry z dysku wewnętrznego (spec: 2026-08-22-gry-z-dysku-design.md) ---
