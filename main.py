@@ -1028,6 +1028,22 @@ class Plugin:
                 # widziałoby „karta bez zmian" i grało od starszego zapisu.
                 card_dir = self._card_saves_dir(record)
                 on_card = None
+                if not card_dir:
+                    # Karty nie ma w czytniku. Wyjście „to wyślijmy chociaż do chmury"
+                    # jest PODWÓJNIE złe i ZMIERZONE na Decku 2026-09-11 (Animal Well):
+                    # łamie niezmiennik (chmura przed kartą), a przy okazji zaciera
+                    # jedyny ślad po tym postępie — `saves.backup()` odświeża LOKALNY
+                    # katalog kopii, a to WOBEC NIEGO mierzy się `local_changed`.
+                    # Urządzenie wygląda potem na czyste, więc przy najbliższym
+                    # włożeniu karty tabela decyzyjna mówi `restore` i starszy zapis
+                    # z drugiej maszyny nadpisuje nowszy tutaj, meldując sukces.
+                    # Zostawiamy zapis u siebie: `local_changed` pozostaje prawdą,
+                    # a fazie karty (`skip` + `changed` → `_carry_to_card`) nie
+                    # brakuje wtedy niczego, żeby go wywieźć kartą PRZED chmurą.
+                    problem = msg("push_card_absent", title=title)
+                    log.add("error", problem)
+                    return {"title": title, "ok": False, "conflict": False,
+                            "error": problem}
                 if card_dir:
                     on_card = saves.card_backup_many([title], card_dir).get(title)
                     if on_card is not False:
@@ -1038,7 +1054,11 @@ class Plugin:
                             registry, record, card_dir,
                             (saves.card_when_many([title], card_dir) or {}).get(title))
                     if on_card is False:
-                        registry.set_fields(record["title_key"], pending_push=True)
+                        # BEZ `pending_push`: karta tego nie dostała, a zaległa wysyłka
+                        # w `sync_all` idzie prosto przez `backup(cloud=True)`, czyli
+                        # z pominięciem karty. Flaga byłaby drugą drogą do tego samego
+                        # złamania niezmiennika, tylko przebieg później. Pamięcią o
+                        # niewywiezionym postępie jest `local_changed`.
                         problem = msg("push_no_card", title=title,
                                      detail=_stderr_hint(saves))
                         log.add("error", problem)
@@ -1062,8 +1082,10 @@ class Plugin:
                     return {"title": title, "ok": True, "conflict": False}
                 outcome = saves.backup(title)
         except SyncLocked as exc:
-            # zapis użytkownika NIE może zginąć po cichu — najbliższy przebieg go dokończy
-            registry.set_fields(record["title_key"], pending_push=True)
+            # Zapis użytkownika NIE może zginąć po cichu — i najbliższy przebieg go
+            # dokończy, ale fazą KARTY, nie zaległą wysyłką: zamek był zajęty, więc
+            # karta niczego nie dostała, a `pending_push` wysłałoby to samo do chmury
+            # przed kartą. `local_changed` pamięta ten postęp tak samo dobrze.
             problem = msg("push_deferred", title=title, detail=str(exc))
             log.add("error", problem)
             return {"title": title, "ok": False, "conflict": False, "error": problem}

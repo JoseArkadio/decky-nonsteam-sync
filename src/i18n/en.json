@@ -1,4 +1,5 @@
 {
+  "err.push_card_absent": "{title}: the card is not in the reader — the save stays on this device and will travel on the card.",
   "lang.own_name": "English",
   "log.empty": "No events.",
   "log.game_page_section": "game page section: {detail}",

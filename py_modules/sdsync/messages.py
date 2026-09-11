@@ -67,6 +67,8 @@ CODES = {
                      " the cloud{detail}."),
     "push_nowhere_no_card": ("{title}: nowhere to save — the card is not in the"
                              " reader and the cloud is not configured."),
+    "push_card_absent": ("{title}: the card is not in the reader — the save stays"
+                         " on this device and will travel on the card."),
     "push_nowhere_no_saves": "{title}: nowhere to save — the game has no saves.",
     "push_saved_card_only": "{title}: saved to the card (cloud not configured).",
     "push_deferred": ("{title}: the upload was deferred ({detail}) — the next"
