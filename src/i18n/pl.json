@@ -51,6 +51,7 @@
   "err.path_repaired": "{title}: karta zmieniła punkt montowania, więc ścieżkę poprawiono.",
   "err.pending_push_still_failing": "{title}: zaległa wysyłka nadal nie doszła.",
   "err.playtime_card_missing": "{title}: czas gry zapisany lokalnie, karta niedostępna — suma niepełna.",
+  "err.push_card_absent": "{title}: karty nie ma w czytniku — zapis zostaje na tym urządzeniu i pojedzie kartą.",
   "err.push_deferred": "{title}: wysyłka odłożona ({detail}) — dokończy ją najbliższa synchronizacja.",
   "err.push_failed": "{title}: NIEUDANE.",
   "err.push_failed_conflict": "{title}: NIEUDANE (konflikt).",

@@ -418,21 +418,34 @@ def test_push_after_game_never_runs_while_a_sync_holds_the_lock(tmp_path):
     assert "error" in result
 
 
-def test_deferred_push_is_recorded_so_the_next_run_can_finish_it(tmp_path):
-    """Nieudana wysyłka bez śladu w rejestrze = po przełożeniu karty drugie urządzenie
-    gra ze STARSZEGO zapisu z chmury. Zasada 1: awaria nie może zniknąć."""
+def test_zajety_zamek_zglasza_awarie_ale_nie_odklada_wysylki_do_chmury(tmp_path):
+    """ODWRÓCONA DECYZJA. Ten test wymagał wcześniej `pending_push is True`.
+
+    Zasada 1 obowiązuje dalej i jest tu sprawdzona: awaria nie może zniknąć, więc RPC
+    oddaje `ok: False` z przyczyną. Zmienia się DROGA dokończenia. `pending_push`
+    zamawia w `sync_all` wysyłkę prosto przez `backup(cloud=True)` — z pominięciem
+    karty. A przy zajętym zamku nie wykonało się NIC, więc karta tego zapisu nie ma
+    i chmura dostałaby stan, którego karta nie zna: dokładnie ten scenariusz z pociągu,
+    przed którym niezmiennik ma chronić.
+
+    Postęp nie ginie, bo pamięta go `local_changed` (żywy zapis ≠ lokalna kopia),
+    a faza karty najbliższego przebiegu wywozi go kartą PRZED chmurą.
+    """
 
     async def scenario():
         main, plugin, _ = _plugin(tmp_path)
         task = asyncio.create_task(plugin.sync_all())
         await asyncio.sleep(SLOW / 2)
-        await plugin.push_after_game(4242)
+        wynik = await plugin.push_after_game(4242)
         await task
-        return main
+        return main, wynik
 
-    main = asyncio.run(scenario())
-    registry = Registry(os.path.join(main.decky.DECKY_PLUGIN_SETTINGS_DIR, "games.json"))
-    assert registry.get("animal-well")["pending_push"] is True
+    main, wynik = asyncio.run(scenario())
+    assert wynik["ok"] is False and wynik.get("error"), wynik
+    record = Registry(os.path.join(
+        main.decky.DECKY_PLUGIN_SETTINGS_DIR, "games.json")).get("animal-well")
+    assert record["pending_push"] is False, record
+    assert record["last_push_ts"] is None, "rejestr melduje wysyłkę, której nie było"
 
 
 def test_playtime_from_the_card_is_never_lowered_by_an_empty_registry(tmp_path):
@@ -494,6 +507,9 @@ def test_missing_appid_never_matches_an_unregistered_game(tmp_path):
 
 def test_successful_push_records_the_backup_markers(tmp_path):
     _, plugin, _ = _plugin(tmp_path)
+    # karta MUSI być w czytniku: bez niej wyjście z gry nie ma prawa niczego wysłać
+    # (chmura nigdy nie dostaje stanu, którego nie ma karta)
+    plugin._card_mount = lambda record: str(tmp_path / "SD256")
     result = asyncio.run(plugin.push_after_game(4242))
     assert result == {"title": "Animal Well", "ok": True, "conflict": False}
     record = asyncio.run(plugin.games())[0]
@@ -504,6 +520,7 @@ def test_failed_push_never_records_a_backup_marker(tmp_path):
     """Reguła 1: rejestr nie może meldować „wysłano", gdy w chmurze nic nie ma —
     po przełożeniu karty drugie urządzenie zagrałoby ze starszego zapisu."""
     _, plugin, saves = _plugin(tmp_path)
+    plugin._card_mount = lambda record: str(tmp_path / "SD256")
     saves.backup = lambda title, cloud=True: {"ok": False, "changed_bytes": 0,
                                               "conflict": False}
     result = asyncio.run(plugin.push_after_game(4242))
@@ -692,8 +709,23 @@ def test_nieudana_kopia_na_karte_nie_wysyla_do_chmury(tmp_path):
     assert result["ok"] is False and result.get("error")
 
 
-def test_bez_karty_w_czytniku_wysylka_do_chmury_dziala_jak_dawniej(tmp_path):
-    """Karta wyjęta między wyjściem z gry a wysyłką — zapis nadal ma gdzie trafić."""
+def test_bez_karty_w_czytniku_nic_nie_wychodzi_poza_urzadzenie(tmp_path):
+    """ODWRÓCONA DECYZJA. Ten test asertował wcześniej `ok is True` i wywołanie
+    `backup` — czyli dokładnie zachowanie, które ZGUBIŁO zapis użytkownika.
+
+    ZMIERZONE na Decku 2026-09-11 (Animal Well): przy wyjętej karcie wyjście z gry
+    poszło prosto do `saves.backup(title)`. To nie tylko łamie niezmiennik „chmura
+    nigdy nie dostaje stanu, którego nie ma karta" — to zaciera JEDYNY ślad po tym
+    postępie. `local_changed` mierzy żywy zapis WOBEC lokalnego katalogu kopii, więc
+    po takiej wysyłce podgląd mówi `change: Same`, czyli „nic nowego nie mam".
+    Przy najbliższym włożeniu karty `decide(local_changed=False, cloud_ahead=True)`
+    daje `restore` — i starszy zapis z drugiego urządzenia nadpisuje nowszy tutaj,
+    meldując sukces.
+
+    Bez karty zapis zostaje na urządzeniu. `local_changed` zostaje wtedy prawdą,
+    a najbliższy przebieg wywiezie go fazą karty (`skip` + `changed` → `_carry_to_card`),
+    czyli kartą PRZED chmurą — jedyną kolejnością, która tego niezmiennika nie łamie.
+    """
 
     async def scenario():
         _, plugin, saves = _plugin(tmp_path)
@@ -701,8 +733,29 @@ def test_bez_karty_w_czytniku_wysylka_do_chmury_dziala_jak_dawniej(tmp_path):
         return await plugin.push_after_game(4242), saves
 
     result, saves = asyncio.run(scenario())
-    assert result["ok"] is True
-    assert "backup" in saves.calls and "card_backup" not in saves.calls
+    assert "backup" not in saves.calls, saves.calls
+    assert "card_backup" not in saves.calls, saves.calls
+    assert result["ok"] is False and result.get("error"), result
+
+
+def test_bez_karty_wyjscie_z_gry_nie_odklada_wysylki_do_chmury(tmp_path):
+    """`pending_push` znaczy DOKŁADNIE „karta to ma, chmura jeszcze nie".
+
+    Zaległe wysyłki idą w `sync_all` prosto przez `backup(cloud=True)`, z pominięciem
+    karty (sync.py:89-97). Oflagowanie gry, której karta NIE dostała, zamieniłoby więc
+    tę pętlę w drugą drogę łamania tego samego niezmiennika — tyle że jeden przebieg
+    później, gdzie nikt jej już nie wiąże z wyjściem z gry.
+    """
+
+    async def scenario():
+        main, plugin, _ = _plugin(tmp_path)
+        plugin._card_mount = lambda record: None
+        await plugin.push_after_game(4242)
+        return Registry(os.path.join(
+            main.decky.DECKY_PLUGIN_SETTINGS_DIR, "games.json")).get("animal-well")
+
+    record = asyncio.run(scenario())
+    assert record["pending_push"] is False, record
 
 
 def test_wyjscie_z_gry_zapamietuje_tozsamosc_kopii_na_karcie(tmp_path):
