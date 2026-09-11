@@ -1,5 +1,4 @@
 {
-  "err.push_card_absent": "{title}: the card is not in the reader — the save stays on this device and will travel on the card.",
   "lang.own_name": "English",
   "log.empty": "No events.",
   "log.game_page_section": "game page section: {detail}",
@@ -69,6 +68,7 @@
   "qa.toast_push_error_body": "appid {appid}: {detail}",
   "qa.toast_push_failed_body": "{title}: saves did NOT reach the cloud{detail}. See details in “Events” in the NonSteam Sync panel.",
   "qa.toast_push_failed_title": "NonSteam Sync: upload failed",
+  "qa.toast_push_kept_local_body": "{title}: the card is not in the reader — the save stays on this device and will travel on the card.",
   "qa.toast_push_ok_body": "{title}'s saves were uploaded to the cloud.",
   "qa.toast_restored_body": "Downloaded saves: {games} ({reason})",
   "qa.toast_scan_failed_title": "NonSteam Sync: scan failed",

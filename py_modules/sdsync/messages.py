@@ -65,14 +65,12 @@ CODES = {
     "game_included": "{title}: syncing again.",
     "push_no_card": ("{title}: could not write to the card — not uploading to"
                      " the cloud{detail}."),
-    "push_nowhere_no_card": ("{title}: nowhere to save — the card is not in the"
-                             " reader and the cloud is not configured."),
     "push_card_absent": ("{title}: the card is not in the reader — the save stays"
                          " on this device and will travel on the card."),
     "push_nowhere_no_saves": "{title}: nowhere to save — the game has no saves.",
     "push_saved_card_only": "{title}: saved to the card (cloud not configured).",
-    "push_deferred": ("{title}: the upload was deferred ({detail}) — the next"
-                      " sync will finish it."),
+    "push_deferred": ("{title}: the upload was deferred ({detail}) — the save stays"
+                      " on this device until the next sync."),
     "push_sent": "{title}: sent.",
     "push_failed": "{title}: FAILED.",
     "push_sent_conflict": "{title}: sent (conflict).",
@@ -114,7 +112,6 @@ CODES = {
 
     # --- przebieg synchronizacji (sync.py) ---
     "sync_nothing_to_do": "Nothing to sync for {titles}: not in the registry.",
-    "pending_push_still_failing": "{title}: the deferred upload still did not go through.",
     "ludusavi_unknown_title": ("{title}: the Ludusavi database does not know this title,"
                                " so its saves are not handled. Fix the title on the"
                                " game page."),

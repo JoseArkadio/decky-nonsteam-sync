@@ -1233,26 +1233,51 @@ def test_every_ludusavi_call_survives_a_manifest_update_failure():
         assert argv[1] == "--try-manifest-update", argv
 
 
-def test_sync_finishes_a_deferred_push_before_reading_the_cloud(tmp_path):
-    """Wysyłka odłożona (zamek był zajęty przez przebieg) musi zostać dokończona,
-    i to PRZED odczytem stanu chmury: inaczej podgląd widzi lokalną kopię, której
-    w chmurze jeszcze nie ma, i bierze ją za rozjazd."""
-    reg = _reg(tmp_path, "Hades", pending_push=True)
-    saves = FakeSaves()
-    SyncService(reg, saves, is_running=lambda title: False).sync_all()
+def test_zalegla_wysylka_idzie_faza_karty_karta_przed_chmura(tmp_path):
+    """ODWRÓCONA DECYZJA (recenzja PR #22). Ten test wymagał wcześniej, żeby zaległa
+    wysyłka poszła PIERWSZA i prosto przez `backup(cloud=True)` — bez karty. Tamta
+    pętla wysyłała ŻYWY stan, nie ten, który karta dostała (użytkownik mógł zagrać
+    między jednym a drugim), i odświeżała lokalną kopię, zacierając `local_changed`.
+    Dziś zaległość idzie fazą karty jak każdy niewywieziony postęp: karta pierwsza,
+    chmura druga, flaga schodzi dopiero po udanej chmurze."""
+    karta = str(tmp_path / "SD256" / ".sdsync" / "saves")
+    reg = _reg(tmp_path, "Hades", pending_push=True, card_label="SD256",
+               card_seen={"SD256": "2026-08-20T20:00:00.0Z"})
+    saves = FakeSavesKarta(card={"Hades": "2026-08-20T20:00:00.0Z"})
+    SyncService(reg, saves, is_running=lambda title: False,
+                card_dir=lambda record: karta).sync_all()
 
-    assert saves.events[0] == ("backup", "Hades", True), saves.events
+    kinds = [e[0] for e in saves.events]
+    assert "card_backup" in kinds and "backup" in kinds, saves.events
+    assert kinds.index("card_backup") < kinds.index("backup"), saves.events
+    assert ("backup", "Hades", True) in saves.events, saves.events
     assert reg.get("hades")["pending_push"] is False, "zaległa wysyłka nie odhaczona"
 
 
-def test_a_deferred_push_that_still_fails_stays_pending_and_is_reported(tmp_path):
+def test_zalegla_wysylka_bez_karty_czeka_i_nie_dotyka_chmury(tmp_path):
+    """Bez karty w czytniku zaległość CZEKA: chmura jest kopią, nie ma po co się
+    spieszyć, a wysyłka bez karty to ten scenariusz z pociągu. Flaga zostaje, żeby
+    status mówił prawdę."""
+    reg = _reg(tmp_path, "Hades", pending_push=True, card_label="SD256")
+    saves = FakeSaves()
+    SyncService(reg, saves, is_running=lambda title: False,
+                card_dir=lambda record: "").sync_all()
+
+    assert not any(e[0] == "backup" for e in saves.events), saves.events
+    assert reg.get("hades")["pending_push"] is True
+
+
+def test_zalegla_wysylka_ktora_nadal_pada_zostaje_i_jest_zgloszona(tmp_path):
     """Zasada 1: awaria nie może wyglądać jak sukces. Odhaczona, a niedoszła wysyłka
     to po przełożeniu karty gra ze STARSZEGO zapisu z chmury."""
-    reg = _reg(tmp_path, "Hades", pending_push=True)
-    saves = FakeSaves()
+    karta = str(tmp_path / "SD256" / ".sdsync" / "saves")
+    reg = _reg(tmp_path, "Hades", pending_push=True, card_label="SD256",
+               card_seen={"SD256": "2026-08-20T20:00:00.0Z"})
+    saves = FakeSavesKarta(card={"Hades": "2026-08-20T20:00:00.0Z"})
     saves.backup = lambda title, cloud=True: {"ok": False, "changed_bytes": 0,
                                               "conflict": False}
-    result = SyncService(reg, saves, is_running=lambda title: False).sync_all()
+    result = SyncService(reg, saves, is_running=lambda title: False,
+                         card_dir=lambda record: karta).sync_all()
 
     assert reg.get("hades")["pending_push"] is True
     assert any(e["params"].get("title") == "Hades" for e in result["errors"]), \
